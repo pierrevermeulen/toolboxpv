@@ -3,5 +3,5 @@ setuptools>=26
 wheel>=0.29
 pytest
 coverage
-python3-matplolib
+python3-matplotlib
 scikit-learn
