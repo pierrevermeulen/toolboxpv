@@ -1,57 +1,54 @@
 # -*- coding: UTF-8 -*-
-# Copyright (C) 2018 Jean Bizot <jean@styckr.io>
+
 """ Main lib for toolboxpv Project
 """
-
 from os.path import split
-import pandas as pd
-import datetime
+import matplotlib.pyplot as plt
+from sklearn.metrics import accuracy_score, precision_score, f1_score, \
+        mean_squared_error, mean_absolute_error
 
-pd.set_option('display.width', 200)
+def plot_history(history, metric, n_epochs=0):
+    fig, ax = plt.subplots(1, 2, figsize=(16, 4))
+    ax[0].plot(history.history['loss'][n_epochs:], label = 'Train')
+    if val_loss in history.history.keys():
+        ax[0].plot(history.history['val_loss'][n_epochs:], label = 'Validation')
+    ax[0].set_title('Model loss')
+    ax[0].set_ylabel('Loss')
+    ax[0].set_xlabel('Epoch')
+    ax[0].legend(loc='best')
 
+    dict_leg = {'mae': 'Absolute Error',
+                'mse': 'Absolute Square Error',
+                'accuracy': 'Accuracy',
+                'precision': 'Precision',
+                'f1': 'F1 score'}
+    ax[1].plot(history.history[metric][n_epochs:], label = 'Train')
+    if 'val_'+metric in history.history.keys():
+        ax[1].plot(history.history['val_'+metric][n_epochs:], label = 'Validation')
+    ax[1].set_title('Model mean '+ dict_leg[metric])
+    ax[1].set_ylabel('Mean '+ dict_leg[metric])
+    ax[1].set_xlabel('Epoch')
+    ax[1].legend(loc='best')
+    plt.show()
 
-def clean_data(data):
-    """ clean data
-    """
-    # Remove columns starts with vote
-    cols = [x for x in data.columns if x.find('vote') >= 0]
-    data.drop(cols, axis=1, inplace=True)
-    # Remove special characteres from columns
-    data.loc[:, 'civility'] = data['civility'].replace('\.', '', regex=True)
-    # Calculate Age from day of birth
-    actual_year = datetime.datetime.now().year
-    data.loc[:, 'Year_Month'] = pd.to_datetime(data.birthdate)
-    data.loc[:, 'Age'] = actual_year - data['Year_Month'].dt.year
-    # Uppercase variable to avoid duplicates
-    data.loc[:, 'city'] = data['city'].str.upper()
-    # Take 2 first digits, 2700 -> 02700 so first two are region
-    data.loc[:, 'postal_code'] = data.postal_code.str.zfill(5).str[0:2]
-    # Remove columns with more than 50% of nans
-    cnans = data.shape[0] / 2
-    data = data.dropna(thresh=cnans, axis=1)
-    # Remove rows with more than 50% of nans
-    rnans = data.shape[1] / 2
-    data = data.dropna(thresh=rnans, axis=0)
-    # Discretize based on quantiles
-    data.loc[:, 'duration'] = pd.qcut(data['surveyduration'], 10)
-    # Discretize based on values
-    data.loc[:, 'Age'] = pd.cut(data['Age'], 10)
-    # Rename columns
-    data.rename(columns={'q1': 'Frequency'}, inplace=True)
-    # Transform type of columns
-    data.loc[:, 'Frequency'] = data['Frequency'].astype(int)
-    # Rename values in rows
-    drows = {1: 'Manytimes', 2: 'Onetimebyday', 3: '5/6timesforweek',
-             4: '4timesforweek', 5: '1/3timesforweek', 6: '1timeformonth',
-             7: '1/trimestre', 8: 'Less', 9: 'Never'}
-    data.loc[:, 'Frequency'] = data['Frequency'].map(drows)
-    return data
+    return ax
 
+def show_results(y_test, y_pred, metric, label = ''):
+    if metric == 'accuracy':
+        score = accuracy_score(y_test, y_pred)
+    elif metric == 'precision':
+        score = precision_score(y_test, y_pred)
+    elif metric == 'F1':
+        score = f1_score(y_test, y_pred)
+    elif metric == 'mae':
+        score = mean_absolute_error(y_test, y_pred)
+    elif metric == 'mean_squared_error':
+        score = mean_squared_error(y_test, y_pred)
+
+    print(f"Final {label} {metric}: {score:.4f}")
+    return score
 
 if __name__ == '__main__':
     # For introspections purpose to quickly get this functions on ipython
     import toolboxpv
-    folder_source, _ = split(toolboxpv.__file__)
-    df = pd.read_csv('{}/data/data.csv.gz'.format(folder_source))
-    clean_data = clean_data(df)
-    print(' dataframe cleaned')
+

@@ -3,17 +3,13 @@
 # Import from standard library
 import os
 import toolboxpv
-import pandas as pd
 # Import from our lib
-from toolboxpv.lib import clean_data
+from toolboxpv.lib import show_results
 import pytest
 
 
-def test_clean_data():
-    datapath = os.path.dirname(os.path.abspath(toolboxpv.__file__)) + '/data'
-    df = pd.read_csv('{}/data.csv.gz'.format(datapath))
-    first_cols = ['id', 'civility', 'birthdate', 'city', 'postal_code', 'vote_1']
-    assert list(df.columns)[:6] == first_cols
-    assert df.shape == (999, 142)
-    out = clean_data(df)
-    assert out.shape == (985, 119)
+def test_show_results():
+    y_test =[1, 2, 3]
+    y_pred = [2, 3, 4]
+    metric = 'mae'
+    assert show_results(y_test, y_pred, metric) == 1.0

@@ -1,6 +1,6 @@
 # Data analysis
 - Document here the project: toolboxpv
-- Description: Project Description
+- Description: Toolbox of PV
 - Data Source:
 - Type of analysis:
 
@@ -61,10 +61,10 @@ Functionnal test with a script:
 ```bash
   $ cd /tmp
   $ toolboxpv-run
-``` 
+```
 
 # Continus integration
-## Github 
+## Github
 Every push of `master` branch will execute `.github/workflows/pythonpackages.yml` docker jobs.
 ## Gitlab
 Every push of `master` branch will execute `.gitlab-ci.yml` docker jobs.
